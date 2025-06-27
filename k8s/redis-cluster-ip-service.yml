@@ -1,12 +1,77 @@
+# =============================================================================
+# Kubernetes Redis ClusterIP Service Configuration
+# =============================================================================
+# This service exposes the Redis cache internally within the cluster
+# ClusterIP services are only accessible from within the Kubernetes cluster
+# Learn more about Services: https://kubernetes.io/docs/concepts/services-networking/service/
+
+# API version for Service resources
 apiVersion: v1
+# Resource type - network service abstraction
 kind: Service
+
 metadata:
+  # Service name (used by other pods to connect to Redis)
   name: redis-cluster-ip-service
+
 spec:
+  # ==========================================================================
+  # Service Type Configuration
+  # ==========================================================================
+  # ClusterIP = Internal cluster service (default type)
+  # Learn more about Service Types: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
+  
+  # ==========================================================================
+  # Pod Selector
+  # ==========================================================================
+  # Defines which pods this service will route traffic to
+  # Must match the labels on the Redis deployment pods
   selector:
+    # Must match redis-deployment pod labels
     component: redis
+  
+  # ==========================================================================
+  # Port Configuration
+  # ==========================================================================
+  # Learn more about Service Ports: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
   ports:
+    # Protocol for the connection
     - protocol: TCP
+      # Port exposed by the service (what other pods connect to)
       port: 6379
+      # Port on the target pod (Redis container port)
       targetPort: 6379
+
+# =============================================================================
+# Redis Connection Information
+# =============================================================================
+# Other pods can connect to Redis using:
+# - Hostname: redis-cluster-ip-service
+# - Port: 6379
+# - Connection string example: redis://redis-cluster-ip-service:6379
+
+# =============================================================================
+# Service Discovery
+# =============================================================================
+# Kubernetes automatically creates DNS entries for services:
+# - redis-cluster-ip-service.default.svc.cluster.local (FQDN)
+# - redis-cluster-ip-service (short name within same namespace)
+# Learn more: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+
+# =============================================================================
+# Production Considerations
+# =============================================================================
+# - Connection pooling: Consider Redis connection pooling for high-traffic applications
+# - Health checks: Configure readiness/liveness probes on Redis pods
+# - Security: Use Redis AUTH for authentication if needed
+# - Monitoring: Set up Redis performance monitoring
+# - Persistence: Configure Redis persistence (RDB/AOF) for data durability
+
+# =============================================================================
+# Additional Resources
+# =============================================================================
+# - Service Networking: https://kubernetes.io/docs/concepts/services-networking/
+# - Redis Best Practices: https://redis.io/docs/management/optimization/
+# - Network Policies: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+# - Redis Documentation: https://redis.io/docs/

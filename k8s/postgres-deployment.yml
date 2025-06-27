@@ -1,33 +1,112 @@
+# =============================================================================
+# Kubernetes PostgreSQL Database Deployment Configuration
+# =============================================================================
+# This deployment manages PostgreSQL database pods with persistent storage
+# Learn more about StatefulSets vs Deployments for databases: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+
+# API version for Deployment resources
 apiVersion: apps/v1
+# Resource type - manages database pods
 kind: Deployment
+
 metadata:
+  # Name of the deployment
   name: postgres-deployment
+
 spec:
+  # ==========================================================================
+  # Replica Configuration
+  # ==========================================================================
+  # Single replica for database (consider StatefulSet for production)
+  # Learn more about database best practices: https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/
   replicas: 1
+  
+  # ==========================================================================
+  # Pod Selector
+  # ==========================================================================
+  # Defines how the deployment finds which pods to manage
   selector:
     matchLabels:
-     component: postgres
+      # Must match the labels in template.metadata.labels
+      component: postgres
+  
+  # ==========================================================================
+  # Pod Template
+  # ==========================================================================
+  # Pod template specification
   template:
     metadata:
       labels:
+        # Labels applied to pods created by this deployment
         component: postgres
+    
     spec:
+      # ========================================================================
+      # Persistent Storage Configuration
+      # ========================================================================
+      # Learn more about Volumes: https://kubernetes.io/docs/concepts/storage/volumes/
       volumes:
-        - name: postgress-storage
+        # Volume name (Fixed typo from "postgress")
+        - name: postgres-storage
           persistentVolumeClaim:
+            # References the PVC for persistent storage
             claimName: database-persistent-volume-claim
+      
       containers:
+        # Container name within the pod
         - name: postgres
+          # Official PostgreSQL Docker image
+          # Production tip: Use specific version tags instead of 'latest'
+          # Learn more: https://hub.docker.com/_/postgres
           image: postgres:latest
+          
+          # ====================================================================
+          # Container Ports
+          # ====================================================================
           ports:
+            # Standard PostgreSQL port
             - containerPort: 5432
+          
+          # ====================================================================
+          # Volume Mounts
+          # ====================================================================
+          # Mount persistent storage to PostgreSQL data directory
+          # Learn more about Volume Mounts: https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath
           volumeMounts:
-            - name: postgress-storage
+            # Must match volume name above (Fixed typo)
+            - name: postgres-storage
+              # PostgreSQL data directory inside container
               mountPath: /var/lib/postgresql/data
-              subpath: postgres
+              # Subdirectory within the volume (Fixed from "subpath")
+              subPath: postgres
+          
+          # ====================================================================
+          # Environment Variables
+          # ====================================================================
+          # Learn more: https://hub.docker.com/_/postgres (Environment Variables section)
           env:
             - name: POSTGRES_PASSWORD
+              # Using Kubernetes Secret for database password security
+              # Learn more about Secrets: https://kubernetes.io/docs/concepts/configuration/secret/
               valueFrom:
                 secretKeyRef:
+                  # Name of the Secret resource containing the password
                   name: postgres-secret
+                  # Key within the Secret
                   key: PGPASSWORD
+
+# =============================================================================
+# Production Considerations
+# =============================================================================
+# - Use StatefulSet instead of Deployment for databases: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/
+# - Implement backup strategies: https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/#backup-and-restore
+# - Configure resource limits: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+# - Set up monitoring and alerting: https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/
+
+# =============================================================================
+# Additional Resources
+# =============================================================================
+# - Persistent Volumes: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+# - Storage Classes: https://kubernetes.io/docs/concepts/storage/storage-classes/
+# - Database Security: https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/
+# - PostgreSQL Configuration: https://www.postgresql.org/docs/current/runtime-config.html

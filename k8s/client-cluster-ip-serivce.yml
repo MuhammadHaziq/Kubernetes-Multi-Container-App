@@ -1,12 +1,77 @@
+# =============================================================================
+# Kubernetes React Client ClusterIP Service Configuration
+# =============================================================================
+# This service exposes the React frontend internally within the cluster
+# ClusterIP services are only accessible from within the Kubernetes cluster
+# Learn more about Services: https://kubernetes.io/docs/concepts/services-networking/service/
+
+# API version for Service resources
 apiVersion: v1
+# Resource type - network service abstraction
 kind: Service
+
 metadata:
+  # Service name (used by ingress to route traffic to React app)
   name: client-cluster-ip-service
+
 spec:
+  # ==========================================================================
+  # Service Type Configuration
+  # ==========================================================================
+  # ClusterIP = Internal cluster service (default type)
+  # Learn more about Service Types: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
+  
+  # ==========================================================================
+  # Pod Selector
+  # ==========================================================================
+  # Defines which pods this service will route traffic to
+  # Must match the labels on the React client deployment pods
   selector:
+    # Must match client-deployment pod labels
     component: web
+  
+  # ==========================================================================
+  # Port Configuration
+  # ==========================================================================
+  # Learn more about Service Ports: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
   ports:
+    # Protocol for the connection
     - protocol: TCP
+      # Port exposed by the service (what ingress connects to)
       port: 3000
+      # Port on the target pod (React dev server port)
       targetPort: 3000
+
+# =============================================================================
+# Traffic Flow for Frontend Requests
+# =============================================================================
+# 1. External user requests → Ingress Controller
+# 2. Ingress Controller → client-cluster-ip-service:3000
+# 3. Service → React client pods on port 3000
+# 4. React app serves static files and handles client-side routing
+
+# =============================================================================
+# Frontend Service Considerations
+# =============================================================================
+# - This service handles React development server traffic
+# - In production, consider serving static files via CDN or web server
+# - The React app makes API calls to server-cluster-ip-service
+# - Client-side routing is handled by React Router
+
+# =============================================================================
+# Production Considerations
+# =============================================================================
+# - Static file serving: Consider nginx for production builds
+# - CDN integration: Use CDN for static assets in production
+# - Health checks: Configure readiness/liveness probes
+# - Caching: Implement proper caching headers for static assets
+# - HTTPS: Ensure secure connections via ingress TLS configuration
+
+# =============================================================================
+# Additional Resources
+# =============================================================================
+# - Service Networking: https://kubernetes.io/docs/concepts/services-networking/
+# - React Production Builds: https://create-react-app.dev/docs/production-build/
+# - Ingress Controllers: https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
+# - Frontend Best Practices: https://web.dev/fast/

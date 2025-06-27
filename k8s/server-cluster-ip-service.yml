@@ -1,12 +1,72 @@
-apiVersion: v1
-kind: Service
+# =============================================================================
+# Kubernetes Server (Backend API) ClusterIP Service Configuration
+# =============================================================================
+# A Service provides a stable network endpoint for accessing Express.js API server pods
+# Learn more about Services: https://kubernetes.io/docs/concepts/services-networking/service/
+
+apiVersion: v1                      # API version for Service resources
+kind: Service                       # Resource type - provides network access to pods
+
 metadata:
-  name: server-cluster-ip
+  name: server-cluster-ip-service   # Service name used by the Ingress to route API traffic
+                                   # Note: Referenced in ingress-service.yml as server-cluster-ip-service
+
 spec:
-  type: ClusterIP
+  # ==========================================================================
+  # Service Type
+  # ==========================================================================
+  # ClusterIP type makes the service accessible only within the cluster
+  # The Ingress controller will route external API traffic to this service
+  # Learn more about Service Types: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: ClusterIP                   # Internal cluster service (default type)
+  
+  # ==========================================================================
+  # Pod Selector
+  # ==========================================================================
+  # Selector determines which pods this service will route traffic to
+  # Must match the labels on the Express.js server deployment pods
   selector:
-    component: server
+    component: server               # Routes traffic to pods with this label
+                                   # Must match the labels in server-deployment.yml
+  
+  # ==========================================================================
+  # Port Configuration
+  # ==========================================================================
+  # Learn more about Service Ports: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
   ports:
-    - protocol: TCP
-      port: 5000
-      targetPort: 5000
+    - protocol: TCP                 # Network protocol (TCP/UDP)
+      port: 5000                   # Port that the service exposes within the cluster
+      targetPort: 5000             # Port on the pod where Express.js server runs
+                                   # Must match the containerPort in the server deployment
+
+# =============================================================================
+# Traffic Flow for API Requests
+# =============================================================================
+# External API Request → Ingress Controller → server-cluster-ip-service:5000 → Express.js Pod:5000
+# The Ingress routes requests with path "/api/" to this service
+# Learn more about Ingress: https://kubernetes.io/docs/concepts/services-networking/ingress/
+
+# =============================================================================
+# Backend Service Considerations
+# =============================================================================
+# - API servers typically handle multiple concurrent requests
+# - Load balancing is automatically handled by the Service
+# - Consider implementing health check endpoints (/health, /ready)
+# - Use proper HTTP status codes and error handling
+# - Implement request logging and monitoring
+
+# =============================================================================
+# Service Load Balancing
+# =============================================================================
+# - Kubernetes automatically load balances requests across healthy pods
+# - Uses round-robin by default, but can be configured
+# - Unhealthy pods are automatically removed from the load balancer
+# - Learn more: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
+
+# =============================================================================
+# Additional Resources
+# =============================================================================
+# - API Design Best Practices: https://kubernetes.io/docs/concepts/cluster-administration/manage-deployment/
+# - Service Mesh: https://kubernetes.io/docs/concepts/services-networking/service-mesh/
+# - Monitoring Services: https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/
+# - Security Best Practices: https://kubernetes.io/docs/concepts/security/

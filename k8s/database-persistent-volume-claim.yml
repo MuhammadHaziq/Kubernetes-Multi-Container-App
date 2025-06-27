@@ -1,11 +1,58 @@
+# =============================================================================
+# Kubernetes Persistent Volume Claim for Database Storage
+# =============================================================================
+# This PVC requests persistent storage for the PostgreSQL database
+# Learn more about Persistent Volume Claims: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
+
+# API version for PersistentVolumeClaim resources
 apiVersion: v1
+# Resource type - requests persistent storage
 kind: PersistentVolumeClaim
+
 metadata:
+  # Name of the PVC (referenced by the postgres deployment)
   name: database-persistent-volume-claim
+
 spec:
+  # ==========================================================================
+  # Access Modes
+  # ==========================================================================
+  # How the volume can be mounted
+  # Learn more: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes
   accessModes:
+    # Volume can be mounted as read-write by a single node
     - ReadWriteOnce
+  
+  # ==========================================================================
+  # Storage Resources
+  # ==========================================================================  
+  # Storage capacity request
+  # Learn more about Resource Management: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   resources:
     requests:
+      # Amount of storage requested (2GB)
+      # Production tip: Size according to your database needs
       storage: 2Gi
+
+# =============================================================================
+# Storage Classes and Dynamic Provisioning
+# =============================================================================
+# Optional: Specify storageClassName for specific storage types
+# storageClassName: fast-ssd
+# Learn more: https://kubernetes.io/docs/concepts/storage/storage-classes/
+
+# =============================================================================
+# Production Considerations
+# =============================================================================
+# - Backup strategies: https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/#backup-and-restore
+# - Storage monitoring: https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/
+# - Volume expansion: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#expanding-persistent-volumes-claims
+# - Data encryption: https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/
+
+# =============================================================================
+# Additional Resources
+# =============================================================================
+# - Persistent Volumes: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+# - Volume Types: https://kubernetes.io/docs/concepts/storage/volumes/#volume-types
+# - Storage Best Practices: https://kubernetes.io/docs/concepts/storage/
   

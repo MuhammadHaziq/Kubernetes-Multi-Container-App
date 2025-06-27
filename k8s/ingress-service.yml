@@ -1,0 +1,65 @@
+# =============================================================================
+# Kubernetes Ingress Configuration
+# =============================================================================
+# An Ingress exposes HTTP and HTTPS routes from outside the cluster to services within the cluster
+# Learn more: https://kubernetes.io/docs/concepts/services-networking/ingress/
+# Nginx Ingress Controller: https://kubernetes.github.io/ingress-nginx/
+
+# API version for Ingress resources
+apiVersion: networking.k8s.io/v1
+# Resource type - defines routing rules for external traffic
+kind: Ingress
+
+metadata:
+  # Name of the Ingress resource
+  name: ingress-service
+  annotations:
+    # Specifies which Ingress Controller should handle this Ingress
+    # Learn more: https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
+    kubernetes.io/ingress.class: nginx
+    
+    # Nginx-specific annotation to rewrite the target URL
+    # Removes the matched path prefix before forwarding to backend service
+    # Learn more: https://kubernetes.github.io/ingress-nginx/examples/rewrite/
+    nginx.ingress.kubernetes.io/rewrite-target: /
+
+spec:
+  rules:
+    - http:
+        paths:
+          # =================================================================
+          # Route for the frontend React application
+          # =================================================================
+          # Match root path and all sub-paths
+          - path: /
+            # Path matching type
+            pathType: Prefix
+            backend:
+              service:
+                # Forward to React client service
+                name: client-cluster-ip-service
+                port:
+                  # Port where client service is running
+                  number: 3000
+          
+          # =================================================================
+          # Route for the backend API server
+          # =================================================================
+          # Match all API routes starting with /api/
+          - path: /api/
+            # Path matching type
+            pathType: Prefix
+            backend:
+              service:
+                # Forward to Express server service
+                name: server-cluster-ip-service
+                port:
+                  # Port where server service is running
+                  number: 5000
+
+# =============================================================================
+# Additional Resources
+# =============================================================================
+# - Ingress Path Types: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
+# - Nginx Ingress Annotations: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/
+# - Ingress Controllers: https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/

@@ -1,12 +1,77 @@
+# =============================================================================
+# Kubernetes PostgreSQL ClusterIP Service Configuration
+# =============================================================================
+# This service exposes the PostgreSQL database internally within the cluster
+# ClusterIP services are only accessible from within the Kubernetes cluster
+# Learn more about Services: https://kubernetes.io/docs/concepts/services-networking/service/
+
+# API version for Service resources
 apiVersion: v1
+# Resource type - network service abstraction
 kind: Service
+
 metadata:
+  # Service name (used by other pods to connect to PostgreSQL)
   name: postgres-cluster-ip-service
+
 spec:
+  # ==========================================================================
+  # Service Type Configuration
+  # ==========================================================================
+  # ClusterIP = Internal cluster service (default type)
+  # Learn more about Service Types: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
+  
+  # ==========================================================================
+  # Pod Selector
+  # ==========================================================================
+  # Defines which pods this service will route traffic to
+  # Must match the labels on the PostgreSQL deployment pods
   selector:
+    # Must match postgres-deployment pod labels
     component: postgres
+  
+  # ==========================================================================
+  # Port Configuration
+  # ==========================================================================
+  # Learn more about Service Ports: https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service
   ports:
+    # Protocol for the connection
     - protocol: TCP
+      # Port exposed by the service (what other pods connect to)
       port: 5432
+      # Port on the target pod (PostgreSQL container port)
       targetPort: 5432
+
+# =============================================================================
+# Database Connection Information
+# =============================================================================
+# Other pods can connect to PostgreSQL using:
+# - Hostname: postgres-cluster-ip-service
+# - Port: 5432
+# - Connection string example: postgresql://username:password@postgres-cluster-ip-service:5432/database
+
+# =============================================================================
+# Service Discovery
+# =============================================================================
+# Kubernetes automatically creates DNS entries for services:
+# - postgres-cluster-ip-service.default.svc.cluster.local (FQDN)
+# - postgres-cluster-ip-service (short name within same namespace)
+# Learn more: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+
+# =============================================================================
+# Production Considerations
+# =============================================================================
+# - Connection pooling: Consider using PgBouncer for connection management
+# - Health checks: Configure readiness/liveness probes on PostgreSQL pods
+# - Security: Use Kubernetes Secrets for database credentials
+# - Monitoring: Set up database performance monitoring
+# - Backup: Implement automated backup strategies
+
+# =============================================================================
+# Additional Resources
+# =============================================================================
+# - Service Networking: https://kubernetes.io/docs/concepts/services-networking/
+# - Database Best Practices: https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/
+# - Network Policies: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+# - PostgreSQL Documentation: https://www.postgresql.org/docs/

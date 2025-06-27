@@ -1,19 +1,81 @@
+# =============================================================================
+# Kubernetes React Client Frontend Deployment Configuration
+# =============================================================================
+# This deployment manages React frontend pods serving the web application
+# Learn more about Deployments: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+
+# API version for Deployment resources
 apiVersion: apps/v1
+# Resource type - manages frontend pods
 kind: Deployment
+
 metadata:
+  # Name of the deployment
   name: client-deployment
+
 spec:
+  # ==========================================================================
+  # Replica Configuration
+  # ==========================================================================
+  # Number of React frontend pod instances
+  # Scale based on traffic requirements
   replicas: 3
+  
+  # ==========================================================================
+  # Pod Selector
+  # ==========================================================================
+  # Defines how the deployment finds which pods to manage
   selector:
     matchLabels:
+      # Must match the labels in template.metadata.labels
       component: web
+  
+  # ==========================================================================
+  # Pod Template
+  # ==========================================================================
+  # Pod template specification
   template:
     metadata:
       labels:
+        # Labels applied to pods created by this deployment
         component: web
+    
     spec:
       containers:
+        # Container name within the pod
         - name: client
-          image: muhammadhaziq/multi-client-up
+          # Custom React application Docker image
+          # Update this to your actual image repository and tag
+          image: stephengrider/multi-client
+          
+          # ====================================================================
+          # Container Ports
+          # ====================================================================
           ports:
+            # React development server port
             - containerPort: 3000
+
+# =============================================================================
+# Frontend Deployment Notes
+# =============================================================================
+# - This serves the React application via development server
+# - For production, consider building static files and serving via nginx
+# - The React app handles client-side routing and API communication
+# - Environment variables can be passed for API endpoints
+
+# =============================================================================
+# Production Considerations
+# =============================================================================
+# - Multi-stage builds: Build React app and serve with nginx
+# - Static file optimization: Implement proper caching and compression
+# - Health checks: Add readiness/liveness probes
+# - Resource limits: Set CPU and memory limits
+# - Image security: Use specific tags and scan for vulnerabilities
+
+# =============================================================================
+# Additional Resources
+# =============================================================================
+# - React Production Builds: https://create-react-app.dev/docs/production-build/
+# - Container Best Practices: https://kubernetes.io/docs/concepts/configuration/overview/
+# - Frontend Deployment Patterns: https://kubernetes.io/docs/concepts/cluster-administration/manage-deployment/
+# - Static File Serving: https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/

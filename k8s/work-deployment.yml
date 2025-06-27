@@ -1,22 +1,71 @@
-apiVersion: app/v1
+# =============================================================================
+# Kubernetes Worker Deployment Configuration
+# =============================================================================
+# This deployment manages the worker pods that process background jobs from Redis
+# Learn more about Deployments: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+
+# API version for Deployment resources (Fixed from app/v1)
+apiVersion: apps/v1
+# Resource type - manages a set of identical pods
 kind: Deployment
+
 metadata:
+  # Name of the deployment
   name: worker-deployment
+
 spec:
+  # ==========================================================================
+  # Replica Configuration
+  # ==========================================================================
+  # Number of worker pod instances to run
+  # Learn more about replicas: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#replicas
   replicas: 1
+  
+  # ==========================================================================
+  # Pod Selector
+  # ==========================================================================
+  # Defines how the deployment finds which pods to manage
   selector:
     matchLabels:
+      # Must match the labels in template.metadata.labels
       component: worker
+  
+  # ==========================================================================
+  # Pod Template
+  # ==========================================================================
+  # Pod template specification
   template:
     metadata:
       labels:
+        # Labels applied to pods created by this deployment
         component: worker
+    
     spec:
       containers:
+        # Container name within the pod
         - name: worker
+          # Docker image for the worker application
+          # Should be built from your worker application code
           image: muhammadhaziq/multi-worker-up
+          
+          # ====================================================================
+          # Environment Variables
+          # ====================================================================
+          # Learn more: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
           env:
             - name: REDIS_HOST
+              # Points to the Redis service within the cluster
+              # Uses Kubernetes DNS for service discovery
               value: redis-cluster-ip-service
+              
             - name: REDIS_PORT
+              # Standard Redis port
               value: "6379"
+
+# =============================================================================
+# Additional Resources
+# =============================================================================
+# - Pod Specification: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#podspec-v1-core
+# - Environment Variables: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+# - Service Discovery: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+# - Worker Patterns: https://kubernetes.io/docs/concepts/workloads/controllers/job/

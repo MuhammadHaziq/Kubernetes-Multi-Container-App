@@ -1,37 +1,111 @@
-apiVersion: app/v1
+# =============================================================================
+# Kubernetes Server Deployment Configuration
+# =============================================================================
+# This deployment manages the Express.js API server pods that handle HTTP requests
+# Learn more about Deployments: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+
+# API version for Deployment resources (Fixed from app/v1)
+apiVersion: apps/v1
+# Resource type - manages a set of identical pods
 kind: Deployment
+
 metadata:
+  # Name of the deployment
   name: server-deployment
+
 spec:
+  # ==========================================================================
+  # Replica Configuration
+  # ==========================================================================
+  # Number of server pod instances for high availability and load distribution
+  # Learn more about scaling: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#scaling-a-deployment
   replicas: 3
+  
+  # ==========================================================================
+  # Pod Selector
+  # ==========================================================================
+  # Defines how the deployment finds which pods to manage
   selector:
     matchLabels:
+      # Must match the labels in template.metadata.labels
       component: server
+  
+  # ==========================================================================
+  # Pod Template
+  # ==========================================================================
+  # Pod template specification
   template:
-    labels:
-      component: server
+    # Fixed: Added missing metadata section
+    metadata:
+      labels:
+        # Labels applied to pods created by this deployment
+        component: server
+    
     spec:
       containers:
+        # Container name within the pod
         - name: server
+          # Docker image for the Express.js server application
           image: muhammadhaziq/multi-server-up
+          
+          # ====================================================================
+          # Container Ports
+          # ====================================================================
           ports:
+            # Port that the server application listens on inside the container
+            # Learn more: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#containerport-v1-core
             - containerPort: 5000
+          
+          # ====================================================================
+          # Environment Variables
+          # ====================================================================
+          # Learn more: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
           env:
+            # ------------------------------------------------------------------
+            # Redis Connection Configuration
+            # ------------------------------------------------------------------
             - name: REDIS_HOST
+              # Redis service name for internal cluster communication
               value: redis-cluster-ip-service
+              
             - name: REDIS_PORT
+              # Standard Redis port
               value: "6379"
+            
+            # ------------------------------------------------------------------
+            # PostgreSQL Connection Configuration
+            # ------------------------------------------------------------------
             - name: PGUSER
+              # Database username
               value: postgres
+              
             - name: PGHOST
+              # PostgreSQL service name for internal cluster communication
               value: postgres-cluster-ip-service
+              
             - name: PGPASSWORD
-              # value: postgres
+              # Using Kubernetes Secret for sensitive data (password)
+              # Learn more about Secrets: https://kubernetes.io/docs/concepts/configuration/secret/
               valueFrom:
                 secretKeyRef:
+                  # Name of the Secret resource
                   name: postgres-secret
+                  # Key within the Secret containing the password
                   key: PGPASSWORD
+                  
             - name: PGPORT
+              # Standard PostgreSQL port
               value: "5432"
+              
             - name: PGDATABASE
+              # Database name to connect to
               value: postgres
+
+# =============================================================================
+# Additional Resources
+# =============================================================================
+# - Managing Secrets: https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/
+# - ConfigMaps and Secrets: https://kubernetes.io/docs/concepts/configuration/
+# - Multi-container Pods: https://kubernetes.io/docs/concepts/workloads/pods/#using-pods
+# - Health Checks: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+# - Resource Limits: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/

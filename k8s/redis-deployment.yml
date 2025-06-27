@@ -1,19 +1,84 @@
+# =============================================================================
+# Kubernetes Redis Cache Deployment Configuration
+# =============================================================================
+# This deployment manages Redis cache pods for session storage and caching
+# Learn more about Redis in Kubernetes: https://kubernetes.io/docs/tutorials/configuration/configure-redis-using-configmap/
+
+# API version for Deployment resources
 apiVersion: apps/v1
+# Resource type - manages Redis pods
 kind: Deployment
+
 metadata:
+  # Name of the deployment
   name: redis-deployment
+
 spec:
+  # ==========================================================================
+  # Replica Configuration
+  # ==========================================================================
+  # Single Redis instance (consider Redis Sentinel/Cluster for production HA)
+  # Learn more about Redis High Availability: https://redis.io/docs/management/sentinel/
   replicas: 1
+  
+  # ==========================================================================
+  # Pod Selector
+  # ==========================================================================
+  # Defines how the deployment finds which pods to manage
   selector:
     matchLabels:
+      # Must match the labels in template.metadata.labels
       component: redis
+  
+  # ==========================================================================
+  # Pod Template
+  # ==========================================================================
+  # Pod template specification
   template:
     metadata:
       labels:
+        # Labels applied to pods created by this deployment
         component: redis
+    
     spec:
       containers:
+        # Container name within the pod
         - name: redis
+          # Official Redis Docker image
+          # Production tip: Use specific version tags instead of 'latest'
+          # Learn more: https://hub.docker.com/_/redis
           image: redis:latest
+          
+          # ====================================================================
+          # Container Ports
+          # ====================================================================
           ports:
+            # Standard Redis port
             - containerPort: 6379
+
+# =============================================================================
+# Redis Configuration Notes
+# =============================================================================
+# - This is a basic Redis setup without persistence
+# - For production, consider:
+#   * Redis persistence (RDB snapshots or AOF logs)
+#   * Redis configuration via ConfigMap
+#   * Resource limits and requests
+#   * Health checks (readiness/liveness probes)
+
+# =============================================================================
+# Production Considerations
+# =============================================================================
+# - High Availability: https://redis.io/docs/management/sentinel/
+# - Persistence: https://redis.io/docs/management/persistence/
+# - Security: https://redis.io/docs/management/security/
+# - Monitoring: https://redis.io/docs/management/optimization/
+# - Resource Management: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+
+# =============================================================================
+# Additional Resources
+# =============================================================================
+# - Redis Configuration: https://redis.io/docs/management/config/
+# - Redis Best Practices: https://redis.io/docs/management/optimization/
+# - Kubernetes ConfigMaps: https://kubernetes.io/docs/concepts/configuration/configmap/
+# - Redis Documentation: https://redis.io/docs/
