@@ -47,7 +47,7 @@ spec:
           # Custom React application Docker image
           # Update this to your actual image repository and tag
           image: stephengrider/multi-client
-          
+
           # ====================================================================
           # Container Ports
           # ====================================================================
