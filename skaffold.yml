@@ -1,41 +1,62 @@
+# Skaffold configuration file for Kubernetes multi-container application
+# Skaffold automates the build, push, and deploy workflow for Kubernetes applications
 apiVersion: skaffold/v2beta31
 kind: Config
+
+# Build configuration - defines how Docker images are built
 build:
+  # Use local Docker daemon instead of pushing to remote registry
   local:
     push: false
+  
+  # Define all the Docker images/artifacts to build
   artifacts:
+    # Frontend React application container
     - image: muhammadhaziq/multi-client
       context: client
       docker:
         dockerfile: Dockerfile.dev
+      # File sync configuration - automatically sync file changes without rebuilding
       sync:
         - "**/*.js": .
         - "**/*.jsx": .
         - "**/*.css": .
         - "**/*.html": .
+    
+    # Nginx reverse proxy container
     - image: muhammadhaziq/multi-nginx
       context: nginx
       docker:
         dockerfile: Dockerfile.dev
+    
+    # Backend Node.js/Express server container
     - image: muhammadhaziq/multi-server
       context: server
       docker:
         dockerfile: Dockerfile.dev
+      # File sync for server-side changes
       sync:
         - "**/*.js": .
         - "**/*.ts": .
         - "**/*.html": .
+    
+    # Background worker process container
     - image: muhammadhaziq/multi-worker
       context: worker
       docker:
         dockerfile: Dockerfile.dev
+      # File sync for worker process changes
       sync:
         - "**/*.js": .
         - "**/*.ts": .
-  deploy:
-    kubectl:
-      manifests:
-        - k8s/client-deployment.yml
-        - k8s/nginx-deployment.yml
-        - k8s/server-deployment.yml
-        - k8s/worker-deployment.yml
+
+# Deploy configuration - defines how to deploy to Kubernetes
+deploy:
+  # Use kubectl to apply Kubernetes manifests
+  kubectl:
+    # List of Kubernetes deployment manifests to apply
+    manifests:
+      - k8s/client-deployment.yml
+      - k8s/nginx-deployment.yml
+      - k8s/server-deployment.yml
+      - k8s/worker-deployment.yml
